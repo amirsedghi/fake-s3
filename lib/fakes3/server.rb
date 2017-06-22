@@ -301,16 +301,20 @@ module FakeS3
         else
           response.status = success_action_status || 204
           if response.status == "201"
+            str = request.inspect
+            port = str[str.index('@port')+6..str[str.index('@port')..str.length].index(',')+str.index('@port')-1]
+            host = str[str.index('@host')+7..str[str.index('@host')..str.length].index(',')+str.index('@host')-2]
             response.body = <<-eos.strip
               <?xml version="1.0" encoding="UTF-8"?>
               <PostResponse>
-                <Location>http://#{s_req}</Location>
+                <Location>http://#{host}:#{port}/#{s_req.bucket}/#{key}</Location>
                 <Bucket>#{s_req.bucket}</Bucket>
                 <Key>#{key}</Key>
                 <ETag>#{response['Etag']}</ETag>
               </PostResponse>
             eos
           end
+
         end
       else
         raise WEBrick::HTTPStatus::BadRequest
